@@ -2,5 +2,8 @@
 - [x] Extract multiple choice questions
 - [x] Identify answers
 - [x] Export to Vaia's xlsx format
+- [-] Modes:
+    - [x] Correct: Use when the answers are revealed
+    - [x] Selected: Uses the user's selected answers as the correct answers. Use this for when the answers are hidden
 - [ ] Handle boolean questions
 - [ ] Skip input type questions

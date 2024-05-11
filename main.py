@@ -1,3 +1,4 @@
+from typing import Literal
 import pandas as pd
 from bs4 import BeautifulSoup
 
@@ -6,6 +7,8 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='File path to read')
     parser.add_argument('-o', '--output', help='Output file path')
+    # --mode selected|correct
+    parser.add_argument('--mode', choices=['selected', 'correct'], default='correct', help='Whether to parse selected answers or correct answers')
     args = parser.parse_args()
     return args
 def create_xlsx(df:pd.DataFrame, filename:str):
@@ -14,7 +17,7 @@ def create_xlsx(df:pd.DataFrame, filename:str):
     # Vaia's excel template is like:
     # Question	Answer A	answer is correct (TRUE if yes, FALSE if no)	Answer B	answer is correct (TRUE if yes, FALSE if no)	Answer C	answer is correct (TRUE if yes, FALSE if no)	Answer D	answer is correct (TRUE if yes, FALSE if no)	Answer E	answer is correct (TRUE if yes, FALSE if no)	Answer F	answer is correct (TRUE if yes, FALSE if no)
 
-def parseHtml(soup:BeautifulSoup):
+def parseHtml(soup:BeautifulSoup, mode:Literal['selected', 'correct']='correct'):
     # Find the div with class question
     questions = soup.find_all('div', class_='question')
     data = [
@@ -47,13 +50,16 @@ def parseHtml(soup:BeautifulSoup):
         answer_containers = question.find_all('div', class_='answer_for_')
         for i, answer_container in enumerate(answer_containers):
             answer_text = answer_container.find('div', class_='answer_text')
-            isCorrect = 'selected_answer' in answer_container['class']
+            isCorrect = False
+            if (mode == 'correct'):
+                isCorrect = 'correct_answer' in answer_container['class']
+            elif (mode == 'selected'):
+                isCorrect = 'selected_answer' in answer_container['class']
             isCorrectText = 'TRUE' if isCorrect else 'FALSE'
             answerIndex = (i + 1)*2-1
             data[answerIndex].append(answer_text.text)
             isCorrectIndex = answerIndex + 1
             data[isCorrectIndex].append(isCorrectText)
-        print()
 
     # count the number of questions
     question_count = len(data[0])
@@ -72,7 +78,9 @@ def main():
     args = cli()
     with open(args.file) as f:
         soup = BeautifulSoup(f, 'html.parser')
-        df = parseHtml(soup)
+        df = parseHtml(soup, args.mode)
+        # Count df
+        # Show the number of questions
         create_xlsx(df, args.output)
 
 if __name__ == '__main__':
