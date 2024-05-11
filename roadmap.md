@@ -1,5 +1,9 @@
 - [x] Read from html
 - [x] Extract multiple choice questions
+- [x] Input source
+    - [ ] Clipboard
+        - [ ] Doesnt work on nixos
+    - [x] html
 - [x] Identify answers
 - [x] Export to Vaia's xlsx format
 - [-] Modes:

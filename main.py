@@ -1,14 +1,18 @@
 from typing import Literal
 import pandas as pd
 from bs4 import BeautifulSoup
+from clipboard import paste
 
 def cli():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('file', help='File path to read')
+    parser.add_argument('-f', '--file', help='File path to read. Attempts to read the clipboard if not provided.')
     parser.add_argument('-o', '--output', help='Output file path')
     # --mode selected|correct
     parser.add_argument('--mode', choices=['selected', 'correct'], default='correct', help='Whether to parse selected answers or correct answers')
+    # --print prints the df
+    parser.add_argument('--print', action='store_true', help='Print the DataFrame')
+
     args = parser.parse_args()
     return args
 def create_xlsx(df:pd.DataFrame, filename:str):
@@ -61,6 +65,12 @@ def parseHtml(soup:BeautifulSoup, mode:Literal['selected', 'correct']='correct')
             isCorrectIndex = answerIndex + 1
             data[isCorrectIndex].append(isCorrectText)
 
+        # if there are less than 6 answers, fill the rest with empty strings
+        for i in range(1, 12, 2):
+            if len(data[i]) < len(data[0]):
+                data[i].append('')
+                data[i+1].append('')
+
     # count the number of questions
     question_count = len(data[0])
     # remove rows with zero answers
@@ -76,12 +86,16 @@ def parseHtml(soup:BeautifulSoup, mode:Literal['selected', 'correct']='correct')
 def main():
     '''Run if main module'''
     args = cli()
-    with open(args.file) as f:
-        soup = BeautifulSoup(f, 'html.parser')
-        df = parseHtml(soup, args.mode)
-        # Count df
-        # Show the number of questions
-        create_xlsx(df, args.output)
+    if args.file:
+        with open(args.file) as f:
+            html_content = f.read()
+    else:
+        html_content = paste()
+    soup = BeautifulSoup(html_content, 'html.parser')
+    df = parseHtml(soup, args.mode)
+    create_xlsx(df, args.output)
 
+    if (args.print):
+        print(df)
 if __name__ == '__main__':
     main()

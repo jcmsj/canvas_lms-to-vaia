@@ -5,3 +5,4 @@ matplotlib
 html5lib
 beautifulsoup4
 openpyxl
+clipboard
