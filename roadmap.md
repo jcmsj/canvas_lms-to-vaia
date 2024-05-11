@@ -1,0 +1,6 @@
+- [x] Read from html
+- [x] Extract multiple choice questions
+- [x] Identify answers
+- [x] Export to Vaia's xlsx format
+- [ ] Handle boolean questions
+- [ ] Skip input type questions
